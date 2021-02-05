@@ -3,7 +3,8 @@ var app = express();
 var bodyParser = require("body-parser");
 var path = require("path");
 var userRouter = require("./routers/user")
-var personRouter = require("./routers/person")
+
+//config cho app
 app.use(bodyParser.urlencoded({ extended: false }))
  
 // parse application/json
@@ -13,8 +14,7 @@ app.get("/", function(req, res){
     res.sendFile(path.join(__dirname, "./views/index.html"))
 })
 
-app.use("/user", userRouter)
-app.use("/person", personRouter)
+app.use("/user", userRouter);
 
 // tên api = tên server + tên router
 // "/person" + "/hien-thi" = "/person/hien-thi"
