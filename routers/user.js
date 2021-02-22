@@ -1,27 +1,53 @@
 var express = require("express")
 var router = express.Router();
 var userServies = require("../services/userServies");
-
 router.get("/", function(req, res){
     //hiển thị toàn dữ liệu trong database
-    // userSerives.getAllUser()
+    // 200, 201, 400, 403, 401, 500, 404, 300
+    userServies.getAllUser().then((listUser) => {
+        res.status(200).json({
+            error: false,
+            message: "hiển thị dữ liệu thành công",
+            data: listUser
+        })
+    }).catch((err) => {
+        res.status(500).json({
+            error: true,
+            message: err,
+        })
+    });
 })
 
 router.get("/:id", function(req, res){
     var id = req.params.id;
-    //hiển thị chi tiết một người dùng theo id
-    // userSerives.getUserById()
+    userServies.getDetailUser(id).then(user => {
+        res.status(200).json({
+            error: false,
+            message: "hiển thị dữ liệu thành công",
+            data:user
+        })
+    }).catch((err) => {
+        res.status(500).json({
+            error: true,
+            message: err,
+        })
+    });
 })
 
 router.put("/:id", function(req, res){
     var id = req.params.id;
     //cập nhật toàn bộ giá trị theo id
-
-//câu khó  
-    // check dữ liệu đầu vào có giá trị hay không
-    // Nếu có thì cho cập nhật cột mà người dùng gửi lên,
-    // nếu 1 cột mà không có giá trị người dùng truyền lên
-    // thì không cho cập nhật
+    userServies.updateUser(id, req.body).then(result => {
+        res.status(200).json({
+            error: false,
+            message: "cập nhật dữ liệu thành công",
+        })
+    }).catch((err) => {
+        res.status(500).json({
+            error: true,
+            message: err,
+        })
+    });
 })
 
 router.delete("/:id", function(req, res){

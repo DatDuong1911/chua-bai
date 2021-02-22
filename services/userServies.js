@@ -19,7 +19,25 @@ function login(email, password){
     })
 }
 
+function getAllUser(){
+    return UserModel.find()
+}
+function getDetailUser(id){
+    return UserModel.findOne({
+        _id: id
+    })
+}
+
+
+function updateUser(id, data){
+    return UserModel.updateOne({
+        _id: id
+    }, data)
+}
 module.exports = {
     createUser: createUser,
-    login: login
+    login: login,
+    getAllUser: getAllUser,
+    getDetailUser,
+    updateUser
 }
