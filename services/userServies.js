@@ -12,11 +12,14 @@ function createUser(username, email, password, age){
     })
 }
 
-function getAllUser(){
-    // sử dụng hàm find()
+function login(email, password){
+    return UserModel.findOne({
+        email: email,
+        password: password
+    })
 }
 
-function getUserById(){}
 module.exports = {
-    createUser: createUser
+    createUser: createUser,
+    login: login
 }

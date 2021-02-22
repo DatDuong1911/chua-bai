@@ -3,6 +3,7 @@ var app = express();
 var bodyParser = require("body-parser");
 var path = require("path");
 var userRouter = require("./routers/user")
+var indexRouter = require("./routers/index")
 
 //config cho app
 app.use(bodyParser.urlencoded({ extended: false }))
@@ -10,10 +11,8 @@ app.use(bodyParser.urlencoded({ extended: false }))
 // parse application/json
 app.use(bodyParser.json())
 app.use(express.static("public"))
-app.get("/", function(req, res){
-    res.sendFile(path.join(__dirname, "./views/index.html"))
-})
 
+app.use("/", indexRouter);
 app.use("/user", userRouter);
 
 // tên api = tên server + tên router
