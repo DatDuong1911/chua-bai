@@ -1,6 +1,10 @@
 var express = require("express")
 var router = express.Router();
 var userServies = require("../services/userServies");
+const bcrypt = require('bcrypt');
+const { updateUser } = require("../services/userServies");
+const saltRounds = 10;
+
 router.get("/", function(req, res){
     //hiển thị toàn dữ liệu trong database
     // 200, 201, 400, 403, 401, 500, 404, 300
@@ -60,41 +64,54 @@ router.post("/", function(req, res){
     var email = req.body.email;
     var password = req.body.password;
     var age = req.body.age;
-    userServies
-    .createUser(username, email, password,age)
-    .then((data) => {
-        res.json({
-            error: false,
-            message: "đăng kí thành công"
-        })
-    }).catch((err) => {
-        res.json({
-            error: true,
-            message: "đăng kí không thành công"
-        })
-    });
-})
 
+    bcrypt.genSalt(saltRounds, function(err, salt) {
+        bcrypt.hash(password, salt, function(err, hash) {
+            userServies
+            .createUser(username, email, hash, age)
+            .then((data) => {
+                res.json({
+                    error: false,
+                    message: "đăng kí thành công"
+                })
+            }).catch((err) => {
+                res.json({
+                    error: true,
+                    message: "đăng kí không thành công"
+                })
+            });
+        });
+    });
+    
+})
 router.post("/login", function(req, res){
     var email = req.body.email;
     var password = req.body.password;
-    userServies
-    .login(email, password)
-    .then((data) => {
-    // tồn tại dữ liệu => data là { }
-    // không tồn tại => data là null
-      if(!data){
-        return res.json({
-            message: "Sai tên hoặc mật khẩu",
-            error: true
-        })
-      }
-      return res.json({
-        message: "Đăng nhập thành công",
-        error: false
-    })
+    userServies.checkEmail(email).then((user) => {
+        if(!user){
+            return res.json({
+                message: "Nguời dùng không tồn tại",
+                error: true
+            })
+        }
+        bcrypt.compare(password, user.password).then(function(result) {
+            if(result){
+                return res.json({
+                    message: "Đăng nhập thành công",
+                    error: false,
+                    user: user
+                })
+            }
+            return res.json({
+                message: "Đăng nhập không thành công",
+                error: true
+            })
+        });
     }).catch((err) => {
-        res.json("không thể kết nối được server")
+        res.json({
+            error: true,
+            message: "không thể kết nối được server"
+        })
     });
 })
 

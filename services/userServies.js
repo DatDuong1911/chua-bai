@@ -28,6 +28,9 @@ function getDetailUser(id){
     })
 }
 
+function checkEmail(email){
+    return UserModel.findOne({email: email})
+}
 
 function updateUser(id, data){
     return UserModel.updateOne({
@@ -39,5 +42,6 @@ module.exports = {
     login: login,
     getAllUser: getAllUser,
     getDetailUser,
-    updateUser
+    updateUser,
+    checkEmail
 }
