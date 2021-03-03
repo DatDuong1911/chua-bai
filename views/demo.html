@@ -12,49 +12,28 @@
 </head>
 <body>
    <form action="">
-    <p>Email: <input type="text" name="email" id="email"></p>
-    <p>Password: <input type="text" name="password" id="password"></p>
-    <button type="button" id="btn">
-        Đăng kí
-    </button>
     <button type="button" id="btn-cookie">
         lấy giá trị cookie
     </button>
+    <button id="delete-cookie">
+        xóa cookie
+    </button>
    </form>
+
 </body>
 <script>
-    $("#btn").click(function(){
-        var email = $("#email").val();
-        var password = $("#password").val();
-        $.ajax({
-            //địa chỉ api
-            url: "/user/login", 
-            //method đi theo api
-            method: "POST",
-            //dữ liệu truyền lên cho người dùng dưới dạng body
-            //method sẽ không cần gửi biến data này lên 
-            //vì get không gửi dữ liệu người dung lên được dưới dạng body
-            //method: post, put, delete
-            data:{
-                email: email,
-                password: password,
-            }
-        }).then((response) => {
-            console.log(response);
-            if(!response.error){
-                // token
-                setCookie("token", response.token, 1)
-            }
-        }).catch((err) => {
-            
-        });
+    //body, params, query, headers(bearer token)
+    //xác thực người dùng:  
+    $("#delete-cookie").click(function(){
+        setCookie("token", "", -1);
     })
-
     $("#btn-cookie").click(function(){
         var token = getCookie("token");
-        console.log("token: "+token);
         $.ajax({
-            url: "/user/decode?token="+token, 
+            url: "/user/decode",
+            headers:{
+                "Authorization": "Bearer "+token,
+            },
             method: "GET",
         }).then((response) => {
             console.log(response);
@@ -64,7 +43,12 @@
     })
 
 
-
+    function setCookie(cname, cvalue, exdays) {
+        var d = new Date();
+        d.setTime(d.getTime() + (exdays*24*60*60*1000));
+        var expires = "expires="+ d.toUTCString();
+        document.cookie = cname + "=" + cvalue + ";" + expires + ";path=/";
+    }
     function getCookie(cname) {
         var name = cname + "=";
         var decodedCookie = decodeURIComponent(document.cookie);
