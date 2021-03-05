@@ -8,7 +8,7 @@ function createUser(username, email, password, age){
         username: username,
         email: email,
         password: password,
-        age: age,
+        age: age
     })
 }
 
@@ -37,6 +37,7 @@ function updateUser(id, data){
         _id: id
     }, data)
 }
+
 module.exports = {
     createUser: createUser,
     login: login,

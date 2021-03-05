@@ -6,7 +6,11 @@ let userSchema = new Schema({
     username: String,
     email: String,
     password: String,
-    age: Number
+    age: Number,
+    roles: {
+        default: "user",
+        type: String
+    }
 })
 //định nghĩa tên bảng
 //tên này khi mà chạy mongodb thì nó sẽ TỰ ĐỘNG THÊM 's' vào sau tên mà mình muốn

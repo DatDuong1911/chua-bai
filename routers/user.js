@@ -2,7 +2,7 @@ var express = require("express")
 var router = express.Router();
 var userServies = require("../services/userServies");
 const bcrypt = require('bcrypt');
-const { updateUser } = require("../services/userServies");
+let checkAuth = require("../middlewares/auth")
 const saltRounds = 10;
 var jwt = require('jsonwebtoken');
 
@@ -25,15 +25,57 @@ router.get("/decode", function(req, res){
   })
   
 
-
-router.get("/", function(req, res){
-    //hiển thị toàn dữ liệu trong database
-    // 200, 201, 400, 403, 401, 500, 404, 300
+//hiển thị toàn bộ-> chỉ dành cho admin, nếu là tìa khoản thường sẽ không được phép hiển thị toàn bộ
+router.get("/", function(req, res, next){
+    try {
+        var token = req.query.token;
+        var decode = jwt.verify(token, "nodemy");
+        userServies.getDetailUser(decode._id).then((user) => {
+            if(!user){
+                return res.json({
+                    error: true,
+                    message: "Tài khoản không tồn tại"
+                })
+            }
+            req.user = user;
+            next();
+        }).catch((err) => {
+            
+        });
+    } catch (error) {
+        console.log(error);
+        if(error.message === "jwt must be provided"){
+            return res.json({
+                error: true,
+                message: "Bạn phải cung cấp mã token"
+            })
+        }
+        if(error.message === "invalid signature"){
+            return res.json({
+                error: true,
+                message: "Mã token không đúng"
+            })
+        }
+        return res.json({
+            err: "lỗi",
+            message: error,
+        })
+    }
+}, function(req, res, next){
+    if(req.user.roles !== "admin"){
+        return res.json({
+            error: true,
+            message: "Bạn không có quyền"
+        })
+    }
+    next();
+}, function(req, res){
     userServies.getAllUser().then((listUser) => {
         res.status(200).json({
             error: false,
             message: "hiển thị dữ liệu thành công",
-            data: listUser
+            data: listUser,
+            user: req.user
         })
     }).catch((err) => {
         res.status(500).json({
@@ -42,8 +84,26 @@ router.get("/", function(req, res){
         })
     });
 })
-
-router.get("/:id", function(req, res){
+//hiển thị chi tiết người dùng, nếu là admin hoặc user thì được hiển thị thông tin của nó,
+// nếu mà là tài khoản khác người dùng hoặc admin thì không cho vào 
+router.get("/:id", function(req, res, next){
+    try {
+        var token = req.query.token;
+        var decode = jwt.verify(token, "nodemy");
+        userServies.getDetailUser(decode._id).then((user) => {
+            if(user._id === req.params._id || user.roles === "admin"){
+               return next();
+            }
+        }).catch((err) => {
+            
+        });
+    } catch (error) {
+        return res.json({
+            err: "lỗi",
+            message: error,
+        })
+    }
+} ,function(req, res){
     var id = req.params.id;
     userServies.getDetailUser(id).then(user => {
         res.status(200).json({
@@ -58,6 +118,11 @@ router.get("/:id", function(req, res){
         })
     });
 })
+
+//middleware: check người dùng => người dùng chưa đăng nhập và người dùng đã đăng nhập
+
+
+
 
 router.put("/:id", function(req, res){
     var id = req.params.id;
@@ -80,12 +145,13 @@ router.delete("/:id", function(req, res){
     //xóa người dung theo id
 })
 
-router.post("/", function(req, res){
+router.post("/",checkAuth.checkAuthEmail, function(req, res){
     var username = req.body.username;
     var email = req.body.email;
     var password = req.body.password;
     var age = req.body.age;
-
+    // var roles = req.body.roles;
+    console.log("bạn đang ở function sau");
     bcrypt.genSalt(saltRounds, function(err, salt) {
         bcrypt.hash(password, salt, function(err, hash) {
             userServies
